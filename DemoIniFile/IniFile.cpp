@@ -137,6 +137,7 @@ void IniFile::WriteFloat(string szSection, string szKey, float fValue)
 {
 	stringstream ss;
 	ss << fValue;
+	// Wert als String in die Liste schreiben
 	this->WriteString(szSection, szKey, ss.str());
 }
 
@@ -166,31 +167,34 @@ void IniFile::WriteString(string szSection, string szKey, string szValue)
 	if (this->findSection(it, szSection))
 	{
 		// Section vorhanden
-		//todo it++;
-		itSec = it; // Zeiger auf 1. Eintrag in der Section merken
+		itSec = it; // Zeiger auf Section merken
 		// Key suchen
 		if (this->findKey(it, szKey))
 		{
 			// Key vorhanden
 			s = ltrim(*it); // Leerzeichen links abschneiden
 			
-			// Falls am Ende d
-			int start = s.find_first_of(';');
+			// Falls am Ende der Zeile ein Kommentar steht, dann diesen zwischenspeichern
+			size_t start = s.find_first_of(';');
 			if (start > 0)
 			{
 				comment = " " + s.substr(start, s.length() - start);
 			}
+			
+			// Zeile hinter den '='-Zeichen löschen
 			start = s.find_first_of('=') + 1;
 			s.erase(start, s.length());
-			s = s + szValue + comment;
-			txtList.insert(it, s);
-			txtList.erase(it);
+			
+			s = s + szValue + comment; // Zeile neu zusammenstellen
+			txtList.insert(it, s);     // in Liste einfügen
+			txtList.erase(it);         // und alten Zeile löschen
 		}
 		else
 		{
 			// neuer Key
-			this->findEndOfSection(itSec);
+			this->findEndOfSection(itSec); // Ende der Section finden
 			s = szKey + "=" + szValue;
+			// Wenn Liste zu Ende, dann neuen Zeile anhängen, ansonsten einfügen
 			if (++itSec == txtList.end())
 				txtList.push_back(s);
 			else
@@ -199,15 +203,15 @@ void IniFile::WriteString(string szSection, string szKey, string szValue)
 	}
 	else
 	{
-		// neue Section
-		txtList.insert(it, "");
+		// neue Section mit Leerzeile davor anhängen
+		txtList.push_back("");
 		s = "[" + szSection + "]";
-		txtList.insert(it, s);
+		txtList.push_back(s);
 		s = szKey + "=" + szValue;
-		txtList.insert(it, s);
+		txtList.push_back(s);
 	}
 
-	this->writeIniFile();
+	this->writeIniFile(); // File schreiben
 }
 
 bool IniFile::FileExist()
@@ -218,6 +222,9 @@ bool IniFile::FileExist()
 //**********************************************************
 //******************* Private Functions ********************
 
+//*********************************************************************************
+// Sucht einen Key in einer Section und gibt den Wert zurück
+//*********************************************************************************
 bool IniFile::getKey(string sec, string key, string &value)
 {
 	string s = "";
@@ -227,26 +234,30 @@ bool IniFile::getKey(string sec, string key, string &value)
 	if (this->findSection(it, sec))
 	{
 		// Section wurde gefunden
-		it++;
 		if (this->findKey(it, key))
 		{
 			// Key gefunden
 			found = true;
 			s = *it;
-			int start = s.find_first_of('=') + 1;
-			s = s.substr(start, s.length() - start);
+			size_t start = s.find_first_of('=') + 1;
+			s = s.substr(start, s.length() - start); // STring nach '=' separieren
+			
+			// Kommentar am Ende abschneiden
 			start = s.find_first_of(';');
 			if (start >= 0)
 			{
 				s.erase(start, s.length());
 			}
-			s = rtrim(s);
+			s = rtrim(s); // Leerzeichen rechts abschneiden
 		}
 	}
-	value = s;
+	value = s; // Wert als String zurükgeben
 	return found;
 }
 
+//*********************************************************************************
+// Zeiger auf einer Section finden
+//*********************************************************************************
 bool IniFile::findSection(list<string>::iterator &it, string section)
 {
 	bool found = false;
@@ -255,6 +266,9 @@ bool IniFile::findSection(list<string>::iterator &it, string section)
 	return found;
 }
 
+//*********************************************************************************
+// Zeiger auf das Ende einer Section finden
+//*********************************************************************************
 void IniFile::findEndOfSection(list<string>::iterator& it)
 {
 	int noOfSearchSections = 1;
@@ -278,12 +292,16 @@ void IniFile::findEndOfSection(list<string>::iterator& it)
 			}
 		}
 		else if (s.length() != 0)
-			itEndSection = it;
+			itEndSection = it;  // Zeiger der Listzeile merken, die Daen enthält
 		it++;
 	}
 	it = itEndSection;
 }
 
+//*********************************************************************************
+// Zeiger auf ein Key innerhalb einer Section finden
+// todo suche von = erzeugt machmal Fehler
+//*********************************************************************************
 bool IniFile::findKey(list<string>::iterator &it, string key)
 {
 	int noOfSearchSections = 1;
@@ -308,7 +326,7 @@ bool IniFile::findKey(list<string>::iterator &it, string key)
 		}
 		else
 		{
-			int pos = s.find(key + "=");
+			size_t pos = s.find(key + "=");
 			if (pos >= 0)
 			{
 				// Key gefunden
@@ -321,9 +339,12 @@ bool IniFile::findKey(list<string>::iterator &it, string key)
 	return found;
 }
 
+//*********************************************************************************
+// Die gesamte Liste wieder in das File zurückschreiben
+//*********************************************************************************
 void IniFile::writeIniFile(void)
 {
-	file.open(fileName+"1", ios::out);
+	file.open(fileName, ios::out);
 	if (!file.fail())
 	{
 		for (auto i : txtList)
@@ -338,6 +359,9 @@ void IniFile::writeIniFile(void)
 //******************** Test Functions **********************
 
 #ifdef INI_FILE_TEST
+//*********************************************************************************
+// Die gesamte Liste auf der Konsole ausgeben
+//*********************************************************************************
 void IniFile::printIniFile(void)
 {
 	cout << "***** Ausgabe des Files *****" << endl;
