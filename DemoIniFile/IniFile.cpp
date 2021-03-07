@@ -1,8 +1,12 @@
 #include "IniFile.h"
+#include "lib.h"
 #include <iostream>
 #include <string>
-#include "lib.h"
+#include <sstream>
 
+//*********************************************************************************
+// Konstruktor für die Klasse IniFile mit Übergabe es zu öffnen Files
+//*********************************************************************************
 IniFile::IniFile(string fileName)
 {
 	string s;
@@ -13,6 +17,7 @@ IniFile::IniFile(string fileName)
 	if (!file.fail())
 	{
 		findFile = true;
+		// File zeilenweise einlesen und der Stringliste anhängen
 		while (getline(file, s))
 		{
 			txtList.push_back(s);
@@ -21,11 +26,15 @@ IniFile::IniFile(string fileName)
 	}
 }
 
+//*********************************************************************************
+// Lesen eines Integerwertes aus der Liste
+//*********************************************************************************
 int IniFile::ReadInteger(string szSection, string szKey, int iDefaultValue)
 {
 	string s;
 	int i = iDefaultValue;
 
+	// Holen des Wertes eines Keys als Teilstring
 	if (this->getKey(szSection, szKey, s))
 	{
 		try
@@ -37,11 +46,15 @@ int IniFile::ReadInteger(string szSection, string szKey, int iDefaultValue)
 	return i;
 }
 
-float IniFile::ReadFloat(string szSection, string szKey, float fltDefaultValue)
+//*********************************************************************************
+// Lesen eines Floatwertes aus der Liste
+//*********************************************************************************
+float IniFile::ReadFloat(string szSection, string szKey, float fDefaultValue)
 {
 	string s;
-	float f= fltDefaultValue;
+	float f= fDefaultValue;
 
+	// Holen des Wertes eines Keys als Teilstring
 	if (this->getKey(szSection, szKey, s))
 	{
 		try
@@ -53,11 +66,15 @@ float IniFile::ReadFloat(string szSection, string szKey, float fltDefaultValue)
 	return f;
 }
 
-bool IniFile::ReadBoolean(string szSection, string szKey, bool bolDefaultValue)
+//*********************************************************************************
+// Lesen eines Boolwertes aus der Liste
+//*********************************************************************************
+bool IniFile::ReadBoolean(string szSection, string szKey, bool bDefaultValue)
 {
 	string s;
-	bool b = bolDefaultValue;
+	bool b = bDefaultValue;
 
+	// Holen des Wertes eines Keys als Teilstring
 	if (this->getKey(szSection, szKey, s))
 	{
 		try
@@ -72,6 +89,9 @@ bool IniFile::ReadBoolean(string szSection, string szKey, bool bolDefaultValue)
 	return b;
 }
 
+//*********************************************************************************
+// Lesen eines Strings aus der Liste
+//*********************************************************************************
 string IniFile::ReadString(string szSection, string szKey, string szDefaultValue)
 {
 	string s;
@@ -79,27 +99,62 @@ string IniFile::ReadString(string szSection, string szKey, string szDefaultValue
 	return this->getKey(szSection, szKey, s) ? s : szDefaultValue;
 }
 
-void WriteInteger(string szSection, string szKey, int iValue)
+//*********************************************************************************
+// Schreiben eines Integerwertes in die Liste
+//*********************************************************************************
+void IniFile::WriteInteger(string szSection, string szKey, int iValue)
 {
-
+	stringstream ss;
+	ss << iValue;
+	// Wert als String in die Liste schreiben
+	this->WriteString(szSection, szKey, ss.str());
 }
 
+//*********************************************************************************
+// Schreiben eines Floatwertes in die Liste
+//*********************************************************************************
+void IniFile::WriteFloat(string szSection, string szKey, float fValue)
+{
+	stringstream ss;
+	ss << fValue;
+	this->WriteString(szSection, szKey, ss.str());
+}
+
+//*********************************************************************************
+// Schreiben eines Boolwertes in die Liste
+//*********************************************************************************
+void IniFile::WriteBoolean(string szSection, string szKey, bool bValue)
+{
+	string s = "false";
+	if (bValue)
+		s = "true";
+	// Wert als String in die Liste schreiben
+	this->WriteString(szSection, szKey, s);
+}
+
+//*********************************************************************************
+// Schreiben eines Strings in die Liste
+//*********************************************************************************
 void IniFile::WriteString(string szSection, string szKey, string szValue)
 {
 	string s;
-	string comment = "";
-	list<string>::iterator it;
-	list<string>::iterator itSec;
+	string comment = "";          // Platzhalter für Kommentar
+	list<string>::iterator it;    // Zeiger auf einen Listeintrag
+	list<string>::iterator itSec; // Zeiger auf den Beginn einer Section
 
+	// Section suchen
 	if (this->findSection(it, szSection))
 	{
 		// Section vorhanden
-		it++;
-		itSec = it;
+		//todo it++;
+		itSec = it; // Zeiger auf 1. Eintrag in der Section merken
+		// Key suchen
 		if (this->findKey(it, szKey))
 		{
 			// Key vorhanden
-			s = ltrim(*it);
+			s = ltrim(*it); // Leerzeichen links abschneiden
+			
+			// Falls am Ende d
 			int start = s.find_first_of(';');
 			if (start > 0)
 			{
@@ -114,9 +169,12 @@ void IniFile::WriteString(string szSection, string szKey, string szValue)
 		else
 		{
 			// neuer Key
-			this->findEndofSection(itSec);
+			this->findEndOfSection(itSec);
 			s = szKey + "=" + szValue;
-			txtList.insert(itSec, s);
+			if (++itSec == txtList.end())
+				txtList.push_back(s);
+			else
+				txtList.insert(itSec, s);
 		}
 	}
 	else
@@ -130,10 +188,6 @@ void IniFile::WriteString(string szSection, string szKey, string szValue)
 	}
 
 	this->writeIniFile();
-
-#ifdef INI_FILE_DEF
-	this->printIniFile();
-#endif
 }
 
 bool IniFile::FileExist()
@@ -181,41 +235,66 @@ bool IniFile::findSection(list<string>::iterator &it, string section)
 	return found;
 }
 
-void IniFile::findEndofSection(list<string>::iterator& it)
+void IniFile::findEndOfSection(list<string>::iterator& it)
 {
+	int noOfSearchSections = 1;
 	string s;
 	list<string>::iterator itEndSection = it;
-
-	while(it != txtList.end())
+	
+	// Wenn das erste Element eine Section ist, dann muss die 2. Section gefunden werden
+	s = ltrim(*it);
+	if (s[0] == '[')
+		noOfSearchSections = 2;
+	
+	while (it != txtList.end())
 	{
 		s = ltrim(*it);
 		if (s[0] == '[')
-			// hier beginnt schon die nächste Section
-			break;
-		if (s.length() != 0)
+		{
+			if (--noOfSearchSections == 0)
+			{
+				// hier beginnt die nächste Section
+				break;
+			}
+		}
+		else if (s.length() != 0)
 			itEndSection = it;
 		it++;
 	}
-	it = ++itEndSection;
+	it = itEndSection;
 }
 
 bool IniFile::findKey(list<string>::iterator &it, string key)
 {
+	int noOfSearchSections = 1;
 	bool found = false;
 	string s;
+
+	// Wenn das erste Element eine Section ist, dann muss die 2. Section gefunden werden
+	s = ltrim(*it);
+	if (s[0] == '[')
+		noOfSearchSections = 2;
 
 	while (it != txtList.end())
 	{
 		s = ltrim(*it);
 		if (s[0] == '[')
-			// Schleife abbrechen, wenn nächste Section gefunden wird
-			break;
-		int pos = s.find(key + "=");
-		if (pos >= 0)
 		{
-			// Key gefunden
-			found = true;
-			break;
+			if (--noOfSearchSections == 0)
+			{
+				// hier beginnt die nächste Section
+				break;
+			}
+		}
+		else
+		{
+			int pos = s.find(key + "=");
+			if (pos >= 0)
+			{
+				// Key gefunden
+				found = true;
+				break;
+			}
 		}
 		it++;
 	}
@@ -241,6 +320,7 @@ void IniFile::writeIniFile(void)
 #ifdef INI_FILE_TEST
 void IniFile::printIniFile(void)
 {
+	cout << "***** Ausgabe des Files *****" << endl;
 	for (auto i : txtList)
 	{
 		cout << i << endl;

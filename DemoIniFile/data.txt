@@ -2,9 +2,6 @@
   Zeile_1=1.Zeile aus Bremen    ;Das ist die erste Zeile
 Zeile_2=2.Zeile
 Zeile_3=3.Zeile
-Zeile_4=100
-Zeile_5=1.6
-Zeile_6=true
 
 
 [Section2]
@@ -14,3 +11,5 @@ Gap1=0x6abdf
 [Section3]
 Zeile_20=was
 [Section3]
+
+[Section4]

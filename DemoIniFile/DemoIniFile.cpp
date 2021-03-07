@@ -16,7 +16,7 @@ int main()
         exit(1);
     }
     sec = "Section1";
-    s = ini.ReadString(sec, "Zeile_1", "default");
+    s = ini.ReadString(sec, "ZEile_1", "default");
     cout << s << endl;
     s = ini.ReadString(sec, "Zeile_2", "default");
     cout << s << endl;
@@ -24,12 +24,20 @@ int main()
     cout << s << endl;
     i = ini.ReadInteger(sec, "Zeile_4", 222);
     cout << i << endl;
-    f = ini.ReadFloat(sec, "Zeile_5", 1.11);
+    f = ini.ReadFloat(sec, "Zeile_5", 1.11f);
     cout << f << endl;
     b = ini.ReadBoolean(sec, "Zeile_6", 0);
     cout << (b?"true":"false") << endl;
     s = ini.ReadString("Section2", "Gap1", "default");
-    cout << s << endl << endl;
+    cout << s << endl;
+    i = ini.ReadInteger(sec, "Int2", 1234567);
+    cout << i << endl;
+    f = ini.ReadFloat(sec, "Float1", 1.00001f);
+    cout << f << endl;
+    b = ini.ReadBoolean(sec, "Bool1", 0);
+    cout << (b ? "true" : "false") << endl;
+
+    cout << endl;
 
     ini.WriteString(sec, "Zeile_1", "write 1");
    // ini.WriteString(sec, "Zeile_2", "write 22");
@@ -37,9 +45,14 @@ int main()
    // ini.WriteString("Section2", "neue Zeile", "Fenster");
    // ini.WriteString("Section3", "Sektionskey3", "Wert");
    // ini.WriteString("Neue Sektion", "newSecKey", "wert");
-
-
-    std::cout << "Hello World!\n";
+    ini.WriteInteger("Section3", "Int1", 111);
+    ini.WriteInteger(sec, "Int2", 4444);
+    ini.WriteFloat(sec, "Float1", 2.1234e3);
+    ini.WriteBoolean(sec, "Bool1", true);
+    ini.WriteString("Section4", "Zeile10", "Hallo");
+    ini.WriteInteger("Section5", "NeuerWert", 258);
+   
+    ini.printIniFile();
 }
 
 // Programm ausführen: STRG+F5 oder Menüeintrag "Debuggen" > "Starten ohne Debuggen starten"
