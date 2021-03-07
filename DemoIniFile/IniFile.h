@@ -8,7 +8,9 @@
 // nach dem Ändern von Werten erhalten.
 // Bei allen Schlüsselwörten wird Groß- und Kleinschreibung berücksichtigt.
 // Die Werte der Schlüsselwörter können Strings, Integer, Float und Boolean
-// (false, true) sein.
+// (false, true) sein. Hexadezimale Werte werden als Integer eingelesen und müssen
+// mit "0x" beginnen. Zum Schreiben von Hex-Werten muss die Funktion WriteHex
+// genommen werden.
 //
 // Funktionsweise:
 // Beim Anlegen einer IniFile-Instanz wird das File geöffnet und Zeile für Zeile in
