@@ -29,7 +29,8 @@ int main()
     b = ini.ReadBoolean(sec, "Zeile_6", 0);
     cout << (b?"true":"false") << endl;
     s = ini.ReadString("Section2", "Gap1", "default");
-    cout << s << endl;
+    int t = ini.ReadInteger("Section2", "Gap1", 1234);
+    cout << s << " * " << t << endl;
     i = ini.ReadInteger(sec, "Int2", 1234567);
     cout << i << endl;
     f = ini.ReadFloat(sec, "Float1", 1.00001f);
@@ -47,12 +48,14 @@ int main()
    // ini.WriteString("Neue Sektion", "newSecKey", "wert");
     ini.WriteInteger("Section3", "Int1", 111);
     ini.WriteInteger(sec, "Int2", 4444);
-    ini.WriteFloat(sec, "Float1", 2.1234e3);
+    ini.WriteFloat(sec, "Float1", 2.1234e3f);
     ini.WriteBoolean(sec, "Bool1", true);
     ini.WriteString("Section4", "Zeile10", "Hallo");
     ini.WriteInteger("Section5", "NeuerWert", 258);
+    ini.WriteHex("Section2", "Gap2", 4097123);
    
-    ini.printIniFile();
+    // ini.printIniFile();
+
 }
 
 // Programm ausführen: STRG+F5 oder Menüeintrag "Debuggen" > "Starten ohne Debuggen starten"

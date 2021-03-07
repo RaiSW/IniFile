@@ -37,11 +37,20 @@ int IniFile::ReadInteger(string szSection, string szKey, int iDefaultValue)
 	// Holen des Wertes eines Keys als Teilstring
 	if (this->getKey(szSection, szKey, s))
 	{
-		try
+		if (s[0] == '0' && toupper(s[1]) == 'X')
 		{
-			i = stoi(s);
+			// Hexwert einlesen
+			i = strtol(s.c_str(), nullptr, 16);
 		}
-		catch (...) {}
+		else
+		{
+			// Integerwert einlesen
+			try
+			{
+				i = stoi(s);
+			}
+			catch (...) {}
+		}
 	}
 	return i;
 }
@@ -106,6 +115,17 @@ void IniFile::WriteInteger(string szSection, string szKey, int iValue)
 {
 	stringstream ss;
 	ss << iValue;
+	// Wert als String in die Liste schreiben
+	this->WriteString(szSection, szKey, ss.str());
+}
+
+//*********************************************************************************
+// Schreiben eines Integerwertes als Hex in die Liste
+//*********************************************************************************
+void IniFile::WriteHex(string szSection, string szKey, int iValue)
+{
+	stringstream ss;
+	ss << "0x" << hex << iValue;
 	// Wert als String in die Liste schreiben
 	this->WriteString(szSection, szKey, ss.str());
 }

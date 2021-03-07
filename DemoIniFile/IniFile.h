@@ -56,7 +56,7 @@ using namespace std;
 
 // Der define stellt die Funktion printIniFile() zur Verfügung,
 // der für Testzwecke die Liste auf die Console ausgibt
-#define INI_FILE_TEST
+// #define INI_FILE_TEST
 
 class IniFile
 {
@@ -68,6 +68,7 @@ public:
 	bool ReadBoolean(string section, string key, bool bDefaultValue);
 	string ReadString(string section, string key, string sDefaultValue);
 	void WriteInteger(string section, string key, int iValue);
+	void WriteHex(string section, string key, int iValue);
 	void WriteFloat(string section, string key, float fValue);
 	void WriteBoolean(string section, string key, bool bValue);
 	void WriteString(string section, string key, string szValue);
