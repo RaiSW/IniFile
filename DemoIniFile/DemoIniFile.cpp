@@ -16,7 +16,7 @@ int main()
         exit(1);
     }
     sec = "Section1";
-      s = ini.ReadString(sec, "ZEile_1", "default");
+    s = ini.ReadString(sec, "ZEile_1", "default");
     cout << s << endl;
     s = ini.ReadString(sec, "Zeile_2", "default");
     cout << s << endl;
